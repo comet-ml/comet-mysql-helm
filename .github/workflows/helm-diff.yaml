@@ -176,12 +176,7 @@ jobs:
               fi
             done
             
-            BODY="✅ No differences found in rendered Helm chart manifests.
-
-**Tested configurations:**
-${VALUES_LIST}
-
-🎉 All rendered manifests remain unchanged!"
+            BODY="✅ No differences found in rendered Helm chart manifests."$'\n\n'"**Tested configurations:**"$'\n'"${VALUES_LIST}"$'\n\n'"🎉 All rendered manifests remain unchanged!"
 
             # Add to workflow summary
             echo "## ✅ Helm Chart Diff - No Changes" >> $GITHUB_STEP_SUMMARY

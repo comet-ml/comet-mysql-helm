@@ -18,6 +18,9 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- if .Values.initdbScripts }}
+        checksum/initdb-scripts: {{ include (print $.Template.BasePath "/initdb-scripts-configmap.yaml") . | sha256sum }}
+        {{- end }}
         {{- with .Values.primary.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -103,10 +106,36 @@ spec:
               mountPath: /var/lib/mysql
             - name: config
               mountPath: /etc/mysql/conf.d
+            {{- if .Values.initdbScripts }}
+            - name: initdb-scripts
+              mountPath: /docker-entrypoint-initdb.d
+            {{- end }}
+            {{- if .Values.tls.enabled }}
+            - name: tls-certs
+              mountPath: /etc/mysql/ssl
+              readOnly: true
+            {{- end }}
       volumes:
         - name: config
           configMap:
             name: {{ include "mysql.configmapName" . }}
+        {{- if .Values.initdbScripts }}
+        - name: initdb-scripts
+          configMap:
+            name: {{ include "mysql.fullname" . }}-initdb-scripts
+        {{- end }}
+        {{- if .Values.tls.enabled }}
+        - name: tls-certs
+          secret:
+            secretName: {{ .Values.tls.existingSecret }}
+            items:
+              - key: {{ .Values.tls.certCAFilename }}
+                path: ca.crt
+              - key: {{ .Values.tls.certFilename }}
+                path: tls.crt
+              - key: {{ .Values.tls.certKeyFilename }}
+                path: tls.key
+        {{- end }}
         {{- if not .Values.primary.persistence.enabled }}
         - name: data
           emptyDir: {}

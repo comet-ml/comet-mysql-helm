@@ -163,6 +163,18 @@ containerSecurityContext:
 
 ## @section Database Initialization
 
+## Init scripts configuration (runs on first initialization)
+## Scripts are mounted to /docker-entrypoint-initdb.d and executed automatically by MySQL
+## Files are executed in alphabetical order
+initdbScripts: {}
+# Example:
+# initdbScripts:
+#   createdb.sql: |-
+#     CREATE DATABASE IF NOT EXISTS opik DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+#     CREATE USER IF NOT EXISTS 'opik'@'%' IDENTIFIED BY 'opik';
+#     GRANT ALL ON `opik`.* TO 'opik'@'%';
+#     FLUSH PRIVILEGES;
+
 ## Init job configuration
 initJob:
   ## @param initJob.enabled Enable database initialization job
@@ -209,6 +221,59 @@ initJob:
     requests:
       memory: 128Mi
       cpu: 100m
+
+## @section Pod Disruption Budget
+
+## Pod Disruption Budget configuration
+podDisruptionBudget:
+  ## @param podDisruptionBudget.enabled Enable Pod Disruption Budget
+  enabled: false
+  ## @param podDisruptionBudget.minAvailable Minimum number/percentage of pods that should remain scheduled
+  ## Can be a number (e.g., 1) or percentage (e.g., "50%")
+  minAvailable: ""
+  ## @param podDisruptionBudget.maxUnavailable Maximum number/percentage of pods that may be made unavailable
+  ## Can be a number (e.g., 1) or percentage (e.g., "50%")
+  ## Note: Only one of minAvailable or maxUnavailable can be set
+  maxUnavailable: 1
+
+## @section TLS/SSL Configuration
+
+## TLS/SSL configuration for MySQL connections
+tls:
+  ## @param tls.enabled Enable TLS/SSL for MySQL connections
+  enabled: false
+  ## @param tls.existingSecret Name of existing secret containing TLS certificates
+  ## Expected keys: ca.crt (CA certificate), tls.crt (server certificate), tls.key (server private key)
+  existingSecret: ""
+  ## @param tls.certFilename Certificate filename in the secret (default: tls.crt)
+  certFilename: "tls.crt"
+  ## @param tls.certKeyFilename Certificate key filename in the secret (default: tls.key)
+  certKeyFilename: "tls.key"
+  ## @param tls.certCAFilename CA certificate filename in the secret (default: ca.crt)
+  certCAFilename: "ca.crt"
+  ## @param tls.requireSecureTransport Require secure transport (TLS) for all connections
+  ## If true, non-TLS connections will be rejected
+  requireSecureTransport: false
+
+## @section Network Policy
+
+## Network Policy configuration
+networkPolicy:
+  ## @param networkPolicy.enabled Enable NetworkPolicy
+  enabled: false
+  ## @param networkPolicy.allowExternal Allow external traffic (all pods in namespace)
+  ## If false, only allows traffic from pods with matching labels
+  allowExternal: false
+  ## @param networkPolicy.allowedNamespaces List of namespace selectors allowed to connect
+  ## Example: [{matchLabels: {name: production}}]
+  allowedNamespaces: []
+  ## @param networkPolicy.allowedPods List of pod selectors allowed to connect
+  ## Example: [{matchLabels: {app: myapp}}]
+  allowedPods: []
+  ## @param networkPolicy.extraIngress Additional ingress rules
+  extraIngress: []
+  ## @param networkPolicy.extraEgress Additional egress rules
+  extraEgress: []
 
 ## @section Backup Configuration
 

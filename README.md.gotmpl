@@ -1,4 +1,4 @@
-{{ template "chart.header" . }}
+MySQL Helm Chart
 {{ template "chart.description" . }}
 
 ## Features
@@ -49,7 +49,9 @@ See the `examples/` directory for complete example configurations:
 
 - **Basic**: `simple-values.yaml`, `opik-values.yaml`
 - **Persistence**: `existing-pvc-values.yaml`
-- **Initialization**: `init-job-mixed-values.yaml`, `init-job-secretref-values.yaml`
+- **Initialization**: `initdb-scripts-values.yaml` (SQL scripts), `init-job-mixed-values.yaml`, `init-job-secretref-values.yaml`
+- **Availability**: `pdb-values.yaml` (Pod Disruption Budget)
+- **Security**: `network-policy-values.yaml` (Network Policy)
 - **Backups**: `backup-aws-s3-values.yaml`, `backup-aws-iam-role-values.yaml`, `backup-minio-values.yaml`
 - **Restore**: `restore-aws-s3-values.yaml`, `restore-aws-iam-role-values.yaml`, `restore-minio-values.yaml`
 - **Complete Setup**: `complete-setup-values.yaml`
@@ -59,7 +61,54 @@ See the `examples/` directory for complete example configurations:
 
 ### Database Initialization
 
-Automatically create multiple databases and users on installation:
+The chart supports two methods for database initialization:
+
+#### Method 1: Init Scripts (initdbScripts)
+
+SQL scripts that run automatically on first initialization (Bitnami-style):
+
+```yaml
+initdbScripts:
+  createdb.sql: |-
+    CREATE DATABASE IF NOT EXISTS opik 
+      DEFAULT CHARACTER SET utf8 
+      DEFAULT COLLATE utf8_general_ci;
+    CREATE USER IF NOT EXISTS 'opik'@'%' IDENTIFIED BY 'opik';
+    GRANT ALL ON `opik`.* TO 'opik'@'%';
+    FLUSH PRIVILEGES;
+```
+
+**Characteristics:**
+- ✅ Runs automatically on first initialization only
+- ✅ Scripts execute in alphabetical order
+- ✅ Mounted to `/docker-entrypoint-initdb.d` (MySQL standard)
+- ✅ Only runs when data directory is empty
+
+#### Method 2: Init Job (Helm Hook)
+
+Flexible init job that runs after MySQL is ready:
+
+```yaml
+initJob:
+  enabled: true
+  databases:
+    - name: opik
+      username: opik
+      password: opik_password  # or use passwordSecretRef
+    - name: comet
+      username: comet
+      passwordSecretRef:
+        secretName: comet-db-secret
+        secretKey: password
+```
+
+**Characteristics:**
+- ✅ Runs as Helm post-install/post-upgrade hook
+- ✅ Supports both plain text passwords and secret references
+- ✅ Runs every time (can be idempotent with IF NOT EXISTS)
+- ✅ More flexible for dynamic configurations
+
+**You can use both methods together** - initdbScripts run first, then initJob runs after.
 
 ```yaml
 initJob:
@@ -106,6 +155,36 @@ restore:
     region: "us-east-1"
     prefix: "mysql-backups"
     existingSecret: "aws-s3-credentials"
+```
+
+### Pod Disruption Budget
+
+Protect MySQL from voluntary disruptions (node drains, pod evictions):
+
+```yaml
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1  # Keep at least 1 pod available (for single replica)
+  # OR
+  # maxUnavailable: 0  # Prevent any disruption
+```
+
+### Network Policy
+
+Restrict network traffic to/from MySQL pods:
+
+```yaml
+networkPolicy:
+  enabled: true
+  allowExternal: true  # Allow all pods in namespace
+  # OR restrict to specific namespaces/pods:
+  # allowExternal: false
+  # allowedNamespaces:
+  #   - matchLabels:
+  #       name: production
+  # allowedPods:
+  #   - matchLabels:
+  #       app: myapp
 ```
 
 ## Connecting to MySQL

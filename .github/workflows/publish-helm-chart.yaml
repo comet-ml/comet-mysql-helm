@@ -17,6 +17,9 @@ jobs:
     steps:
         - name: Checkout
           uses: actions/checkout@v4.1.1
+          with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+            fetch-depth: 0
 
         - name: Update Chart version
           run: |
@@ -61,6 +64,18 @@ jobs:
             echo "New version: $new_version"
             echo "VERSION_NAME=$new_version" | tee -a $GITHUB_ENV
 
+        - name: Update Chart.yaml with new version
+          run: |
+            # Update Chart.yaml with the new version
+            if [ -n "$VERSION_NAME" ]; then
+              sed -i "s/^version:.*/version: $VERSION_NAME/" Chart.yaml
+              echo "Updated Chart.yaml version to: $VERSION_NAME"
+              cat Chart.yaml | grep "^version:"
+            else
+              echo "ERROR: VERSION_NAME is not set"
+              exit 1
+            fi
+
         - name: Run lint on Helm chart
           run: |
               # No dependencies to add for MySQL chart (self-contained)
@@ -100,6 +115,22 @@ jobs:
             charts-path: .
             chart-version: ${{env.VERSION_NAME}}
             helm-push-extra: --force --relative
+
+        - name: Commit and push version update
+          run: |
+            set -x
+            git config --local user.email "github-actions@comet.com"
+            git config --local user.name "github-actions"
+            
+            # Check if Chart.yaml was modified
+            if git diff --quiet Chart.yaml; then
+              echo "No changes to Chart.yaml, skipping commit"
+            else
+              git add Chart.yaml
+              git commit -m "chore: bump chart version to ${{env.VERSION_NAME}}"
+              git push --no-verify origin HEAD:${{ github.ref_name }}
+              echo "✅ Version update committed and pushed"
+            fi
 
         - name: Create git tag
           run: |

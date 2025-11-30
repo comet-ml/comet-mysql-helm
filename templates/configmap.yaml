@@ -9,5 +9,14 @@ metadata:
 data:
   my.cnf: |-
     {{ .Values.primary.configuration | nindent 4 }}
+    {{- if .Values.tls.enabled }}
+    # TLS/SSL Configuration
+    ssl-ca=/etc/mysql/ssl/ca.crt
+    ssl-cert=/etc/mysql/ssl/tls.crt
+    ssl-key=/etc/mysql/ssl/tls.key
+    {{- if .Values.tls.requireSecureTransport }}
+    require_secure_transport=ON
+    {{- end }}
+    {{- end }}
 {{- end }}
 
