@@ -49,8 +49,12 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if .Values.containerSecurityContext.enabled }}
           securityContext:
+            {{- if .Values.containerSecurityContext.runAsUser }}
             runAsUser: {{ .Values.containerSecurityContext.runAsUser }}
+            {{- end }}
+            {{- if ne .Values.containerSecurityContext.runAsNonRoot nil }}
             runAsNonRoot: {{ .Values.containerSecurityContext.runAsNonRoot }}
+            {{- end }}
           {{- end }}
           env:
             - name: MYSQL_ROOT_PASSWORD
@@ -106,6 +110,8 @@ spec:
               mountPath: /var/lib/mysql
             - name: config
               mountPath: /etc/mysql/conf.d
+            - name: run
+              mountPath: /var/run/mysqld
             {{- if .Values.initdbScripts }}
             - name: initdb-scripts
               mountPath: /docker-entrypoint-initdb.d
@@ -136,6 +142,8 @@ spec:
               - key: {{ .Values.tls.certKeyFilename }}
                 path: tls.key
         {{- end }}
+        - name: run
+          emptyDir: {}
         {{- if not .Values.primary.persistence.enabled }}
         - name: data
           emptyDir: {}

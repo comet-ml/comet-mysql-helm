@@ -60,11 +60,13 @@ primary:
   ## @param primary.configuration MySQL primary configuration to be injected as ConfigMap
   configuration: |-
     [mysqld]
-    default-authentication-plugin=mysql_native_password
+    authentication_policy='* ,,'
     skip-name-resolve
     explicit_defaults_for_timestamp
     port=3306
     datadir=/var/lib/mysql
+    socket=/var/run/mysqld/mysqld.sock
+    pid-file=/var/run/mysqld/mysqld.pid
     max_allowed_packet=16M
     bind-address=0.0.0.0
     character-set-server=utf8mb4
@@ -157,9 +159,12 @@ containerSecurityContext:
   ## @param containerSecurityContext.enabled Enabled MySQL containers' Security Context
   enabled: true
   ## @param containerSecurityContext.runAsUser Set MySQL containers' Security Context runAsUser
-  runAsUser: 999
+  ## Leave empty to let MySQL entrypoint handle user switching (recommended for initialization)
+  runAsUser: ""
   ## @param containerSecurityContext.runAsNonRoot Set MySQL containers' Security Context runAsNonRoot
-  runAsNonRoot: true
+  ## Set to false to allow root (required for MySQL entrypoint initialization)
+  ## The MySQL entrypoint will switch to mysql user (999) after initialization
+  runAsNonRoot: false
 
 ## @section Database Initialization
 
