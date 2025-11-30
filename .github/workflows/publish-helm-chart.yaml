@@ -1,0 +1,115 @@
+name: Publish MySQL Helm Chart
+run-name: "Publish MySQL Helm Chart ${{ github.ref_name }} by @${{ github.actor }}"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main']
+    paths-ignore:
+      - '.github/**'
+      - 'README.md'
+      - 'examples/**'
+
+jobs:
+  publish-helm-chart:
+    runs-on: org
+
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4.1.1
+
+        - name: Update Chart version
+          run: |
+            # Extract the version number from Chart.yaml
+            current_version=$(grep "^version:" Chart.yaml | awk '{print $2}')
+            echo "Current version: $current_version"
+            
+            # Check if we're on main branch
+            if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+              echo "On main branch - incrementing patch version"
+              
+              # Remove pre-release suffix if present (e.g., 1.0.4-2 -> 1.0.4)
+              base_version=$(echo "$current_version" | sed 's/-.*$//')
+              
+              # Extract major, minor, patch
+              major=$(echo "$base_version" | cut -d. -f1)
+              minor=$(echo "$base_version" | cut -d. -f2)
+              patch=$(echo "$base_version" | cut -d. -f3)
+              
+              # Increment patch version
+              new_patch=$((patch + 1))
+              new_version="${major}.${minor}.${new_patch}"
+              
+            else
+              echo "On branch ${{ github.ref_name }} - adding/incrementing pre-release suffix"
+              
+              # Check if version already has pre-release suffix
+              if [[ "$current_version" == *"-"* ]]; then
+                # Extract base version and pre-release number
+                base_version=$(echo "$current_version" | sed 's/-.*$//')
+                pre_release=$(echo "$current_version" | sed 's/^.*-//')
+                
+                # Increment pre-release number
+                new_pre_release=$((pre_release + 1))
+                new_version="${base_version}-${new_pre_release}"
+              else
+                # Add pre-release suffix starting at 0
+                new_version="${current_version}-0"
+              fi
+            fi
+            
+            echo "New version: $new_version"
+            echo "VERSION_NAME=$new_version" | tee -a $GITHUB_ENV
+
+        - name: Run lint on Helm chart
+          run: |
+              # No dependencies to add for MySQL chart (self-contained)
+              echo "Linting with all example configurations..."
+              
+              # Lint with default values.yaml
+              helm lint --values values.yaml .
+              
+              # Lint with all example files
+              for example in examples/*.yaml; do
+                if [ -f "$example" ]; then
+                  echo "Linting with $(basename $example)..."
+                  helm lint --values "$example" .
+                fi
+              done
+              
+              echo "✅ All lint checks passed!"
+
+        - name: Package and upload to Dev Helm repo
+          uses: comet-ml/gha-tools/release/helm@1.0.11
+          with:
+            aws-region: us-east-1
+            aws-role-to-assume: ${{ vars.DEV_ACTION_RUNNER_ROLE_ARN }}
+            aws-role-session-name: ${{ vars.ROLE_SESSION_NAME }}
+            helm-registry: s3://${{ vars.DEV_REPOSITORY_BUCKET }}/charts
+            charts-path: .
+            chart-version: ${{env.VERSION_NAME}}
+            helm-push-extra: --force --relative
+
+        - name: Package and upload to Public Helm repo
+          uses: comet-ml/gha-tools/release/helm@1.0.11
+          with:
+            aws-region: us-east-1
+            aws-role-to-assume: ${{ vars.PROD_ACTION_RUNNER_ROLE_ARN }}
+            aws-role-session-name: ${{ vars.ROLE_SESSION_NAME }}
+            helm-registry: s3://${{ vars.PROD_REPOSITORY_BUCKET }}/charts
+            charts-path: .
+            chart-version: ${{env.VERSION_NAME}}
+            helm-push-extra: --force --relative
+
+        - name: Create git tag
+          run: |
+            set -x
+            git config --local user.email "github-actions@comet.com"
+            git config --local user.name "github-actions"
+            git tag -f ${{env.VERSION_NAME}}
+            git push --no-verify origin refs/tags/${{env.VERSION_NAME}}
+
+        - name: Summary
+          run: |
+            echo "Helm chart is published, version is : ${{env.VERSION_NAME}}" >> $GITHUB_STEP_SUMMARY
+
