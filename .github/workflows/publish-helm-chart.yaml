@@ -142,5 +142,23 @@ jobs:
 
         - name: Summary
           run: |
-            echo "Helm chart is published, version is : ${{env.VERSION_NAME}}" >> $GITHUB_STEP_SUMMARY
+            echo "## Helm Chart Published" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Version:** \`${{env.VERSION_NAME}}\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Add as Dependency" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "To use this chart as a dependency in another chart, add the following to your \`Chart.yaml\`:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```yaml' >> $GITHUB_STEP_SUMMARY
+            echo 'dependencies:' >> $GITHUB_STEP_SUMMARY
+            echo '  - name: mysql' >> $GITHUB_STEP_SUMMARY
+            echo "    version: \"${{env.VERSION_NAME}}\"" >> $GITHUB_STEP_SUMMARY
+            echo '    repository: "https://helm.dev.comet.com/"' >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Then run:" >> $GITHUB_STEP_SUMMARY
+            echo '```bash' >> $GITHUB_STEP_SUMMARY
+            echo 'helm dependency update' >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
 
