@@ -77,6 +77,10 @@ primary:
   ## @param primary.existingConfigmap Name of existing ConfigMap with MySQL primary configuration
   existingConfigmap: ""
 
+  ## @param primary.extraArgs Additional command-line arguments to pass to mysqld
+  ## Example: ["--max-connections=500", "--log-bin-trust-function-creators=1"]
+  extraArgs: []
+
   ## MySQL primary persistence configuration
   persistence:
     ## @param primary.persistence.enabled Enable persistence using Persistent Volume Claims

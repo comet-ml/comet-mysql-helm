@@ -1,0 +1,30 @@
+# Example: MySQL with additional command-line arguments
+# Usage: helm install mysql ./ -f examples/extra-args-values.yaml
+
+auth:
+  rootPassword: "changeme"
+
+primary:
+  # Additional command-line arguments passed to mysqld
+  # These override or supplement settings in my.cnf
+  extraArgs:
+    - "--max-connections=500"
+    - "--max-allowed-packet=64M"
+    - "--log-bin-trust-function-creators=1"
+    - "--thread-stack=256K"
+    - "--group-concat-max-len=1000000"
+
+  configuration: |-
+    [mysqld]
+    authentication_policy='* ,,'
+    skip-name-resolve
+    port=3306
+    datadir=/var/lib/mysql
+    bind-address=0.0.0.0
+    character-set-server=utf8mb4
+    collation-server=utf8mb4_unicode_ci
+
+  persistence:
+    enabled: true
+    size: 20Gi
+
