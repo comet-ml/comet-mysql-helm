@@ -1,5 +1,4 @@
-# mysql
-
+MySQL Helm Chart
 A simple, standalone MySQL Helm chart with optional cluster support
 
 ## Features
@@ -50,7 +49,10 @@ See the `examples/` directory for complete example configurations:
 
 - **Basic**: `simple-values.yaml`, `opik-values.yaml`
 - **Persistence**: `existing-pvc-values.yaml`
-- **Initialization**: `init-job-mixed-values.yaml`, `init-job-secretref-values.yaml`
+- **Configuration**: `extra-args-values.yaml` (command-line arguments)
+- **Initialization**: `initdb-scripts-values.yaml` (SQL scripts), `init-job-mixed-values.yaml`, `init-job-secretref-values.yaml`
+- **Availability**: `pdb-values.yaml` (Pod Disruption Budget)
+- **Security**: `network-policy-values.yaml` (Network Policy), `tls-values.yaml` (TLS/SSL)
 - **Backups**: `backup-aws-s3-values.yaml`, `backup-aws-iam-role-values.yaml`, `backup-minio-values.yaml`
 - **Restore**: `restore-aws-s3-values.yaml`, `restore-aws-iam-role-values.yaml`, `restore-minio-values.yaml`
 - **Complete Setup**: `complete-setup-values.yaml`
@@ -60,7 +62,32 @@ See the `examples/` directory for complete example configurations:
 
 ### Database Initialization
 
-Automatically create multiple databases and users on installation:
+The chart supports two methods for database initialization:
+
+#### Method 1: Init Scripts (initdbScripts)
+
+SQL scripts that run automatically on first initialization (Bitnami-style):
+
+```yaml
+initdbScripts:
+  createdb.sql: |-
+    CREATE DATABASE IF NOT EXISTS opik
+      DEFAULT CHARACTER SET utf8
+      DEFAULT COLLATE utf8_general_ci;
+    CREATE USER IF NOT EXISTS 'opik'@'%' IDENTIFIED BY 'opik';
+    GRANT ALL ON `opik`.* TO 'opik'@'%';
+    FLUSH PRIVILEGES;
+```
+
+**Characteristics:**
+- ✅ Runs automatically on first initialization only
+- ✅ Scripts execute in alphabetical order
+- ✅ Mounted to `/docker-entrypoint-initdb.d` (MySQL standard)
+- ✅ Only runs when data directory is empty
+
+#### Method 2: Init Job (Helm Hook)
+
+Flexible init job that runs after MySQL is ready:
 
 ```yaml
 initJob:
@@ -75,6 +102,49 @@ initJob:
         secretName: comet-db-secret
         secretKey: password
 ```
+
+**Characteristics:**
+- ✅ Runs as Helm post-install/post-upgrade hook
+- ✅ Supports both plain text passwords and secret references
+- ✅ Runs every time (can be idempotent with IF NOT EXISTS)
+- ✅ More flexible for dynamic configurations
+
+**You can use both methods together** - initdbScripts run first, then initJob runs after.
+
+```yaml
+initJob:
+  enabled: true
+  databases:
+    - name: opik
+      username: opik
+      password: opik_password  # or use passwordSecretRef
+    - name: comet
+      username: comet
+      passwordSecretRef:
+        secretName: comet-db-secret
+        secretKey: password
+```
+
+### MySQL Command-Line Arguments
+
+You can pass additional command-line arguments directly to the `mysqld` process:
+
+```yaml
+primary:
+  extraArgs:
+    - "--max-connections=500"
+    - "--max-allowed-packet=64M"
+    - "--log-bin-trust-function-creators=1"
+    - "--thread-stack=256K"
+```
+
+**Use cases:**
+- Override configuration values at runtime
+- Set values that can't be configured in `my.cnf`
+- Apply temporary settings without changing the config file
+- Test different MySQL settings
+
+**Note:** Command-line arguments take precedence over `my.cnf` configuration. See `examples/extra-args-values.yaml` for a complete example.
 
 ### Automated Backups
 
@@ -107,6 +177,36 @@ restore:
     region: "us-east-1"
     prefix: "mysql-backups"
     existingSecret: "aws-s3-credentials"
+```
+
+### Pod Disruption Budget
+
+Protect MySQL from voluntary disruptions (node drains, pod evictions):
+
+```yaml
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1  # Keep at least 1 pod available (for single replica)
+  # OR
+  # maxUnavailable: 0  # Prevent any disruption
+```
+
+### Network Policy
+
+Restrict network traffic to/from MySQL pods:
+
+```yaml
+networkPolicy:
+  enabled: true
+  allowExternal: true  # Allow all pods in namespace
+  # OR restrict to specific namespaces/pods:
+  # allowExternal: false
+  # allowedNamespaces:
+  #   - matchLabels:
+  #       name: production
+  # allowedPods:
+  #   - matchLabels:
+  #       app: myapp
 ```
 
 ## Connecting to MySQL
@@ -219,8 +319,8 @@ kubectl exec -it <pod-name> -- /bin/bash
 | backup.storage.region | string | `"us-east-1"` |  |
 | backup.tolerations | list | `[]` |  |
 | containerSecurityContext.enabled | bool | `true` |  |
-| containerSecurityContext.runAsNonRoot | bool | `true` |  |
-| containerSecurityContext.runAsUser | int | `999` |  |
+| containerSecurityContext.runAsNonRoot | bool | `false` |  |
+| containerSecurityContext.runAsUser | string | `""` |  |
 | fullnameOverride | string | `""` |  |
 | global.commonLabels | object | `{}` |  |
 | global.imageRegistry | string | `""` |  |
@@ -239,12 +339,23 @@ kubectl exec -it <pod-name> -- /bin/bash
 | initJob.resources.limits.memory | string | `"256Mi"` |  |
 | initJob.resources.requests.cpu | string | `"100m"` |  |
 | initJob.resources.requests.memory | string | `"128Mi"` |  |
+| initdbScripts | object | `{}` |  |
 | nameOverride | string | `""` |  |
+| networkPolicy.allowExternal | bool | `false` |  |
+| networkPolicy.allowedNamespaces | list | `[]` |  |
+| networkPolicy.allowedPods | list | `[]` |  |
+| networkPolicy.enabled | bool | `false` |  |
+| networkPolicy.extraEgress | list | `[]` |  |
+| networkPolicy.extraIngress | list | `[]` |  |
+| podDisruptionBudget.enabled | bool | `false` |  |
+| podDisruptionBudget.maxUnavailable | int | `1` |  |
+| podDisruptionBudget.minAvailable | string | `""` |  |
 | podSecurityContext.enabled | bool | `true` |  |
 | podSecurityContext.fsGroup | int | `999` |  |
 | primary.affinity | object | `{}` |  |
-| primary.configuration | string | `"[mysqld]\ndefault-authentication-plugin=mysql_native_password\nskip-name-resolve\nexplicit_defaults_for_timestamp\nport=3306\ndatadir=/var/lib/mysql\nmax_allowed_packet=16M\nbind-address=0.0.0.0\ncharacter-set-server=utf8mb4\ncollation-server=utf8mb4_unicode_ci\nslow_query_log=0\nlong_query_time=10.0"` |  |
+| primary.configuration | string | `"[mysqld]\nauthentication_policy='* ,,'\nskip-name-resolve\nexplicit_defaults_for_timestamp\nport=3306\ndatadir=/var/lib/mysql\nsocket=/var/run/mysqld/mysqld.sock\npid-file=/var/run/mysqld/mysqld.pid\nmax_allowed_packet=16M\nbind-address=0.0.0.0\ncharacter-set-server=utf8mb4\ncollation-server=utf8mb4_unicode_ci\nslow_query_log=0\nlong_query_time=10.0"` |  |
 | primary.existingConfigmap | string | `""` |  |
+| primary.extraArgs | list | `[]` |  |
 | primary.nodeSelector | object | `{}` |  |
 | primary.persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | primary.persistence.annotations | object | `{}` |  |
@@ -284,6 +395,12 @@ kubectl exec -it <pod-name> -- /bin/bash
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `""` |  |
+| tls.certCAFilename | string | `"ca.crt"` |  |
+| tls.certFilename | string | `"tls.crt"` |  |
+| tls.certKeyFilename | string | `"tls.key"` |  |
+| tls.enabled | bool | `false` |  |
+| tls.existingSecret | string | `""` |  |
+| tls.requireSecureTransport | bool | `false` |  |
 
 ## License
 
