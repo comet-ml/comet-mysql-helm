@@ -49,9 +49,10 @@ See the `examples/` directory for complete example configurations:
 
 - **Basic**: `simple-values.yaml`, `opik-values.yaml`
 - **Persistence**: `existing-pvc-values.yaml`
+- **Configuration**: `extra-args-values.yaml` (command-line arguments)
 - **Initialization**: `initdb-scripts-values.yaml` (SQL scripts), `init-job-mixed-values.yaml`, `init-job-secretref-values.yaml`
 - **Availability**: `pdb-values.yaml` (Pod Disruption Budget)
-- **Security**: `network-policy-values.yaml` (Network Policy)
+- **Security**: `network-policy-values.yaml` (Network Policy), `tls-values.yaml` (TLS/SSL)
 - **Backups**: `backup-aws-s3-values.yaml`, `backup-aws-iam-role-values.yaml`, `backup-minio-values.yaml`
 - **Restore**: `restore-aws-s3-values.yaml`, `restore-aws-iam-role-values.yaml`, `restore-minio-values.yaml`
 - **Complete Setup**: `complete-setup-values.yaml`
@@ -123,6 +124,27 @@ initJob:
         secretName: comet-db-secret
         secretKey: password
 ```
+
+### MySQL Command-Line Arguments
+
+You can pass additional command-line arguments directly to the `mysqld` process:
+
+```yaml
+primary:
+  extraArgs:
+    - "--max-connections=500"
+    - "--max-allowed-packet=64M"
+    - "--log-bin-trust-function-creators=1"
+    - "--thread-stack=256K"
+```
+
+**Use cases:**
+- Override configuration values at runtime
+- Set values that can't be configured in `my.cnf`
+- Apply temporary settings without changing the config file
+- Test different MySQL settings
+
+**Note:** Command-line arguments take precedence over `my.cnf` configuration. See `examples/extra-args-values.yaml` for a complete example.
 
 ### Automated Backups
 

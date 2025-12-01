@@ -127,7 +127,7 @@ jobs:
               echo "No changes to Chart.yaml, skipping commit"
             else
               git add Chart.yaml
-              git commit -m "chore: bump chart version to ${{env.VERSION_NAME}}"
+              git commit -m "bump chart version to ${{env.VERSION_NAME}}"
               git push --no-verify origin HEAD:${{ github.ref_name }}
               echo "✅ Version update committed and pushed"
             fi

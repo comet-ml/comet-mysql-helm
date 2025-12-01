@@ -56,6 +56,12 @@ spec:
             runAsNonRoot: {{ .Values.containerSecurityContext.runAsNonRoot }}
             {{- end }}
           {{- end }}
+          {{- if .Values.primary.extraArgs }}
+          args:
+            {{- range .Values.primary.extraArgs }}
+            - {{ . | quote }}
+            {{- end }}
+          {{- end }}
           env:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
