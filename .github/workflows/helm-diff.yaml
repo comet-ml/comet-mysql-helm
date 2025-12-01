@@ -21,7 +21,9 @@ jobs:
       - name: 1. Checkout Base Branch
         uses: actions/checkout@v4
         with:
+          repository: ${{ github.repository }}
           ref: ${{ github.event.pull_request.base.sha }}
+          token: ${{ secrets.GH_PAT_TO_ACCESS_GITHUB_API }}
 
       - name: 2. Render Base Chart (before.yaml)
         run: |
@@ -45,7 +47,9 @@ jobs:
       - name: 3. Checkout PR Branch (HEAD)
         uses: actions/checkout@v4
         with:
+          repository: ${{ github.repository }}
           ref: ${{ github.event.pull_request.head.sha }}
+          token: ${{ secrets.GH_PAT_TO_ACCESS_GITHUB_API }}
 
       - name: 4. Render PR Chart (after.yaml)
         run: |
