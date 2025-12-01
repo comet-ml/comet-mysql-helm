@@ -3,16 +3,16 @@ MySQL Helm Chart
 
 ## Features
 
-- ✅ **Official MySQL Images**: Uses `docker.io/mysql:8.4.2`
-- ✅ **Standalone Mode**: Simple single-instance deployment
-- ✅ **Persistent Storage**: StatefulSet with PVC support (default 20Gi)
-- ✅ **Configurable**: Customizable MySQL configuration
-- ✅ **Secure**: Kubernetes secrets for passwords
-- ✅ **Production Ready**: Resource limits, health checks, security contexts
-- ✅ **Database Initialization**: Automated database and user creation (optional)
-- ✅ **Automated Backups**: Scheduled backups to S3-compatible storage (optional)
-- ✅ **Restore Operations**: One-time restore from S3-compatible storage (optional)
-- ✅ **Global Labels**: Common labels support for all resources
+- **Official MySQL Images**: Uses `docker.io/mysql:8.4.2`
+- **Standalone Mode**: Simple single-instance deployment
+- **Persistent Storage**: StatefulSet with PVC support (default 20Gi)
+- **Configurable**: Customizable MySQL configuration
+- **Secure**: Kubernetes secrets for passwords
+- **Production Ready**: Resource limits, health checks, security contexts
+- **Database Initialization**: Automated database and user creation (optional)
+- **Automated Backups**: Scheduled backups to S3-compatible storage (optional)
+- **Restore Operations**: One-time restore from S3-compatible storage (optional)
+- **Global Labels**: Common labels support for all resources
 
 ## Prerequisites
 
@@ -80,10 +80,10 @@ initdbScripts:
 ```
 
 **Characteristics:**
-- ✅ Runs automatically on first initialization only
-- ✅ Scripts execute in alphabetical order
-- ✅ Mounted to `/docker-entrypoint-initdb.d` (MySQL standard)
-- ✅ Only runs when data directory is empty
+- Runs automatically on first initialization only
+- Scripts execute in alphabetical order
+- Mounted to `/docker-entrypoint-initdb.d` (MySQL standard)
+- Only runs when data directory is empty
 
 #### Method 2: Init Job (Helm Hook)
 
@@ -104,10 +104,10 @@ initJob:
 ```
 
 **Characteristics:**
-- ✅ Runs as Helm post-install/post-upgrade hook
-- ✅ Supports both plain text passwords and secret references
-- ✅ Runs every time (can be idempotent with IF NOT EXISTS)
-- ✅ More flexible for dynamic configurations
+- Runs as Helm post-install/post-upgrade hook
+- Supports both plain text passwords and secret references
+- Runs every time (can be idempotent with IF NOT EXISTS)
+- More flexible for dynamic configurations
 
 **You can use both methods together** - initdbScripts run first, then initJob runs after.
 
