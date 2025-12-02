@@ -156,9 +156,5 @@ jobs:
             echo "    version: \"${{env.VERSION_NAME}}\"" >> $GITHUB_STEP_SUMMARY
             echo '    repository: "https://helm.dev.comet.com/"' >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Then run:" >> $GITHUB_STEP_SUMMARY
-            echo '```bash' >> $GITHUB_STEP_SUMMARY
-            echo 'helm dependency update' >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
+  
 

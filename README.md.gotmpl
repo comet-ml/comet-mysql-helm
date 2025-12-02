@@ -1,4 +1,13 @@
 MySQL Helm Chart
+
+{{- $chartFile := .Files.Get "Chart.yaml" }}
+{{- if $chartFile }}
+{{- $chart := fromYaml $chartFile }}
+
+![Version: {{ $chart.version }}](https://img.shields.io/badge/Version-{{ $chart.version }}-informational?style=flat-square) ![Type: {{ $chart.type }}](https://img.shields.io/badge/Type-{{ $chart.type }}-informational?style=flat-square) ![AppVersion: {{ $chart.appVersion }}](https://img.shields.io/badge/AppVersion-{{ $chart.appVersion }}-informational?style=flat-square)
+
+{{- end }}
+
 {{ template "chart.description" . }}
 
 ## Features
