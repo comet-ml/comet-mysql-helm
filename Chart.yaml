@@ -2,7 +2,7 @@ apiVersion: v2
 name: mysql
 description: A simple, standalone MySQL Helm chart with optional cluster support
 type: application
-version: 0.1.5
+version: 0.1.6
 appVersion: "8.4.2"
 keywords:
   - mysql
