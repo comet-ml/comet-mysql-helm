@@ -94,6 +94,22 @@ jobs:
               
               echo "✅ All lint checks passed!"
 
+        - name: Install helm-docs
+          run: |
+            HELM_DOCS_VERSION="1.14.2"
+            wget -q https://github.com/norwoodj/helm-docs/releases/download/v${HELM_DOCS_VERSION}/helm-docs_${HELM_DOCS_VERSION}_Linux_x86_64.tar.gz
+            tar -xzf helm-docs_${HELM_DOCS_VERSION}_Linux_x86_64.tar.gz
+            chmod +x helm-docs
+            sudo mv helm-docs /usr/local/bin/
+            echo "Installed helm-docs version:"
+            helm-docs --version
+
+        - name: Generate README with updated version badges
+          run: |
+            echo "Generating README.md with helm-docs..."
+            helm-docs
+            echo "README.md updated with version badges"
+
         - name: Package and upload to Dev Helm repo
           uses: comet-ml/gha-tools/release/helm@1.0.11
           with:
@@ -122,14 +138,14 @@ jobs:
             git config --local user.email "github-actions@comet.com"
             git config --local user.name "github-actions"
             
-            # Check if Chart.yaml was modified
-            if git diff --quiet Chart.yaml; then
-              echo "No changes to Chart.yaml, skipping commit"
+            # Check if Chart.yaml or README.md were modified
+            if git diff --quiet Chart.yaml README.md; then
+              echo "No changes to Chart.yaml or README.md, skipping commit"
             else
-              git add Chart.yaml
+              git add Chart.yaml README.md
               git commit -m "bump chart version to ${{env.VERSION_NAME}}"
               git push --no-verify origin HEAD:${{ github.ref_name }}
-              echo "✅ Version update committed and pushed"
+              echo "✅ Version update and README committed and pushed"
             fi
 
         - name: Create git tag

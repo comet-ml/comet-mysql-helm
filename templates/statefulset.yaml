@@ -113,7 +113,7 @@ spec:
           {{- end }}
           volumeMounts:
             - name: data
-              mountPath: /var/lib/mysql
+              mountPath: {{ .Values.primary.dataDir | trimSuffix "/data" }}
             - name: config
               mountPath: /etc/mysql/conf.d
             - name: run

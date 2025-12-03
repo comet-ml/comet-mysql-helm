@@ -57,7 +57,13 @@ architecture:
 
 ## MySQL primary configuration
 primary:
+  ## @param primary.dataDir MySQL data directory path 
+  ## Default: /var/lib/mysql (official MySQL image default)
+  ## If you need to migrate from Bitnami MySQL use /bitnami/mysql/data
+  dataDir: /var/lib/mysql
+
   ## @param primary.configuration MySQL primary configuration to be injected as ConfigMap
+  ## Note: datadir will be automatically set from primary.dataDir if not specified
   configuration: |-
     [mysqld]
     authentication_policy='* ,,'

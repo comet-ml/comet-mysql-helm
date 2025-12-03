@@ -1,6 +1,6 @@
 MySQL Helm Chart
 
-![Version: 0.1.4](https://img.shields.io/badge/Version-0.1.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.4.2](https://img.shields.io/badge/AppVersion-8.4.2-informational?style=flat-square)
+![Version: 0.1.5](https://img.shields.io/badge/Version-0.1.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.4.2](https://img.shields.io/badge/AppVersion-8.4.2-informational?style=flat-square)
 
 A simple, standalone MySQL Helm chart with optional cluster support
 
@@ -233,6 +233,27 @@ mysql -h 127.0.0.1 -P 3306 -u root -p
 helm upgrade my-mysql ./ -f values.yaml
 ```
 
+## Migrate from Bitnami MySQL
+
+When migrating from Bitnami MySQL chart to this custom MySQL chart:
+
+1. **Set dataDir to Bitnami's path** in your values:
+
+```yaml
+primary:
+  dataDir: /bitnami/mysql/data
+```
+
+2. **Delete the MySQL StatefulSet before upgrading** (PVCs are preserved):
+
+```bash
+kubectl delete statefulset <release-name>-mysql --cascade=orphan
+```
+
+This allows Helm to recreate the StatefulSet with the new chart while reusing the existing PVC and data.
+
+**Note**: The volume will be mounted at `/bitnami/mysql` (base folder), and MySQL will use `/bitnami/mysql/data` as its datadir, matching Bitnami's structure.
+
 ## Uninstalling
 
 ```bash
@@ -357,6 +378,7 @@ kubectl exec -it <pod-name> -- /bin/bash
 | podSecurityContext.fsGroup | int | `999` |  |
 | primary.affinity | object | `{}` |  |
 | primary.configuration | string | `"[mysqld]\nauthentication_policy='* ,,'\nskip-name-resolve\nexplicit_defaults_for_timestamp\nport=3306\ndatadir=/var/lib/mysql\nsocket=/var/run/mysqld/mysqld.sock\npid-file=/var/run/mysqld/mysqld.pid\nmax_allowed_packet=16M\nbind-address=0.0.0.0\ncharacter-set-server=utf8mb4\ncollation-server=utf8mb4_unicode_ci\nslow_query_log=0\nlong_query_time=10.0"` |  |
+| primary.dataDir | string | `"/var/lib/mysql"` |  |
 | primary.existingConfigmap | string | `""` |  |
 | primary.extraArgs | list | `[]` |  |
 | primary.nodeSelector | object | `{}` |  |

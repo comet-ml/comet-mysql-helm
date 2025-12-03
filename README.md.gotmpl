@@ -239,6 +239,27 @@ mysql -h 127.0.0.1 -P 3306 -u root -p
 helm upgrade my-mysql ./ -f values.yaml
 ```
 
+## Migrate from Bitnami MySQL
+
+When migrating from Bitnami MySQL chart to this custom MySQL chart:
+
+1. **Set dataDir to Bitnami's path** in your values:
+
+```yaml
+primary:
+  dataDir: /bitnami/mysql/data
+```
+
+2. **Delete the MySQL StatefulSet before upgrading** (PVCs are preserved):
+
+```bash
+kubectl delete statefulset <release-name>-mysql --cascade=orphan
+```
+
+This allows Helm to recreate the StatefulSet with the new chart while reusing the existing PVC and data.
+
+**Note**: The volume will be mounted at `/bitnami/mysql` (base folder), and MySQL will use `/bitnami/mysql/data` as its datadir, matching Bitnami's structure.
+
 ## Uninstalling
 
 ```bash

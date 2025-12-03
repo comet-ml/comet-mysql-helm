@@ -8,7 +8,13 @@ metadata:
     {{- include "mysql.labels" . | nindent 4 }}
 data:
   my.cnf: |-
-    {{ .Values.primary.configuration | nindent 4 }}
+    {{- $config := .Values.primary.configuration }}
+    {{- $config = regexReplaceAll "(?m)^([^#]*datadir=).*$" $config (printf "${1}%s" .Values.primary.dataDir) }}
+    {{- if not (contains "datadir=" $config) }}
+    # Data directory (automatically set from primary.dataDir)
+    datadir={{ .Values.primary.dataDir }}
+    {{- end }}
+    {{ $config | nindent 4 }}
     {{- if .Values.tls.enabled }}
     # TLS/SSL Configuration
     ssl-ca=/etc/mysql/ssl/ca.crt
