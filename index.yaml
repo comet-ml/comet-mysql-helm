@@ -3,9 +3,9 @@ entries:
   mysql:
   - apiVersion: v2
     appVersion: 8.4.2
-    created: "2025-12-07T16:40:45.526258028Z"
+    created: "2025-12-07T16:50:59.35800647Z"
     description: A simple, standalone MySQL Helm chart
-    digest: 325ff457d09396b31b340a5f5ea416f6ab8525772175a3ba49e3c2b82f4fc228
+    digest: 3382fc6ffbaa8bb208c9ea6dc2142b1900388cec3400c8fbcd5eb21a5ac3d854
     home: https://github.com/comet-ml/comet-mysql-helm
     keywords:
     - mysql
@@ -19,6 +19,6 @@ entries:
     - https://github.com/mysql/mysql-server
     type: application
     urls:
-    - https://comet-ml.github.io/comet-mysql-helm/mysql-1.0.3.tgz
-    version: 1.0.3
-generated: "2025-12-07T16:40:45.524555151Z"
+    - https://comet-ml.github.io/comet-mysql-helm/mysql-1.0.4.tgz
+    version: 1.0.4
+generated: "2025-12-07T16:50:59.356387579Z"
