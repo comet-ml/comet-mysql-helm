@@ -73,7 +73,7 @@ To use this chart as a dependency in another Helm chart, add it to your `Chart.y
 ```yaml
 dependencies:
   - name: mysql
-    version: "0.1.7"
+    version: "{{- $cf := .Files.Get "Chart.yaml" }}{{- if $cf }}{{- $c := fromYaml $cf }}{{ $c.version }}{{- else }}0.1.7{{- end }}"
     repository: "https://comet-ml.github.io/comet-mysql-helm/"
     condition: mysql.enabled
 ```
