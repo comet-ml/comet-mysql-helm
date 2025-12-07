@@ -2,7 +2,7 @@ apiVersion: v2
 name: mysql
 description: A simple, standalone MySQL Helm chart 
 type: application
-version: 0.1.44
+version: 0.1.45
 appVersion: "8.4.2"
 keywords:
   - mysql
