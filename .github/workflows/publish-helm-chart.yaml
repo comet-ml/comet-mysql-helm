@@ -73,22 +73,11 @@ jobs:
             set -e
             helm lint --values values.yaml .
 
-        - name: Install helm-docs
-          shell: bash
-          run: |
-            HELM_DOCS_VERSION="1.14.2"
-            wget -q https://github.com/norwoodj/helm-docs/releases/download/v${HELM_DOCS_VERSION}/helm-docs_${HELM_DOCS_VERSION}_Linux_x86_64.tar.gz
-            tar -xzf helm-docs_${HELM_DOCS_VERSION}_Linux_x86_64.tar.gz
-            chmod +x helm-docs
-            sudo mv helm-docs /usr/local/bin/
-            helm-docs --version
-
-        - name: Generate README with updated version badges
-          shell: bash
-          working-directory: src
-          run: |
-            helm-docs
-            echo "README.md updated with version badges"
+        - name: Update README.md
+          uses: losisin/helm-docs-github-action@v1
+          with:
+            chart-search-root: .
+            git-push: false
 
         - name: Package helm chart
           shell: bash
@@ -134,6 +123,20 @@ jobs:
             git config user.email "github-actions@comet.com"
             git tag -f ${{env.VERSION_NAME}}
             git push --no-verify origin refs/tags/${{env.VERSION_NAME}}
+
+        - name: Create Release Changelog
+          id: release_changelog
+          uses:  jaywcjlove/changelog-generator@v2.2.2
+          with:
+            token: ${{ secrets.GH_PAT_TO_ACCESS_GITHUB_API }}
+            show-emoji: "false"
+
+        - name: Create GitHub release
+          uses: mikepenz/action-gh-release@v0.4.1
+          with:
+            tag_name: ${{env.VERSION_NAME}}
+            body: ${{steps.release_changelog.outputs.changelog}}
+            generate_release_notes: true
 
         - name: Summary
           run: |
