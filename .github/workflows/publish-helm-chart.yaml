@@ -94,7 +94,7 @@ jobs:
           shell: bash
           working-directory: src
           run: |
-            helm package --version ${{env.VERSION_NAME}} --app-version $(grep "^appVersion:" Chart.yaml | awk '{print $2}' | tr -d '"') . -d ../../dest
+            helm package --version ${{env.VERSION_NAME}} . -u -d ../dest
             cp README.md ../dest/.
 
         - name: Push New Files
@@ -128,7 +128,7 @@ jobs:
           shell: bash
           working-directory: src
           env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.GH_PAT_TO_ACCESS_GITHUB_API }}
           run: |
             git config user.name "github-actions"
             git config user.email "github-actions@comet.com"
