@@ -13,7 +13,7 @@ global:
 # MySQL configuration (customize as needed)
 auth:
   rootPassword: "changeme"
-  database: "opik"
+  database: "myapp"
 
 persistence:
   enabled: true

@@ -29,34 +29,68 @@ MySQL Helm Chart
 - Helm 3.0+
 - PV provisioner support (if persistence is enabled)
 
-## Quick Start
+## Installation
 
-### Basic Installation
+### Method 1: Helm Repository (Recommended)
+
+Add the repository to your Helm configuration:
 
 ```bash
-helm install my-mysql ./
+helm repo add mysql https://comet-ml.github.io/comet-mysql-helm/
+helm repo update
 ```
 
-### With Custom Values
+Then install using the repository:
 
 ```bash
-helm install my-mysql ./ \
+# Basic installation
+helm install my-mysql mysql/mysql
+
+# With custom values
+helm install my-mysql mysql/mysql \
   --set auth.rootPassword=mypassword \
   --set auth.database=mydb \
   --set primary.persistence.size=50Gi
+
+# Using a values file
+helm install my-mysql mysql/mysql -f my-values.yaml
 ```
 
-### Using a Values File
+### Method 2: Local Chart
+
+Clone the repository and install directly:
 
 ```bash
-helm install my-mysql ./ -f my-values.yaml
+git clone https://github.com/comet-ml/comet-mysql-helm.git
+cd comet-mysql-helm
+helm install my-mysql ./
+```
+
+## Using as a Dependency
+
+To use this chart as a dependency in another Helm chart, add it to your `Chart.yaml`:
+
+```yaml
+dependencies:
+  - name: mysql
+    version: "0.1.7"
+    repository: "https://comet-ml.github.io/comet-mysql-helm/"
+    condition: mysql.enabled
+```
+
+Then run:
+
+```bash
+helm repo add mysql https://comet-ml.github.io/comet-mysql-helm/
+helm dependency update
+helm install my-app .
 ```
 
 ## Examples
 
 See the `examples/` directory for complete example configurations:
 
-- **Basic**: `simple-values.yaml`, `opik-values.yaml`
+- **Basic**: `simple-values.yaml`
 - **Persistence**: `existing-pvc-values.yaml`
 - **Configuration**: `extra-args-values.yaml` (command-line arguments)
 - **Initialization**: `initdb-scripts-values.yaml` (SQL scripts), `init-job-mixed-values.yaml`, `init-job-secretref-values.yaml`
@@ -80,11 +114,11 @@ SQL scripts that run automatically on first initialization (Bitnami-style):
 ```yaml
 initdbScripts:
   createdb.sql: |-
-    CREATE DATABASE IF NOT EXISTS opik 
+    CREATE DATABASE IF NOT EXISTS myapp 
       DEFAULT CHARACTER SET utf8 
       DEFAULT COLLATE utf8_general_ci;
-    CREATE USER IF NOT EXISTS 'opik'@'%' IDENTIFIED BY 'opik';
-    GRANT ALL ON `opik`.* TO 'opik'@'%';
+    CREATE USER IF NOT EXISTS 'myapp'@'%' IDENTIFIED BY 'myapp_password';
+    GRANT ALL ON `myapp`.* TO 'myapp'@'%';
     FLUSH PRIVILEGES;
 ```
 
@@ -102,13 +136,13 @@ Flexible init job that runs after MySQL is ready:
 initJob:
   enabled: true
   databases:
-    - name: opik
-      username: opik
-      password: opik_password  # or use passwordSecretRef
-    - name: comet
-      username: comet
+    - name: myapp
+      username: myapp
+      password: myapp_password  # or use passwordSecretRef
+    - name: production
+      username: produser
       passwordSecretRef:
-        secretName: comet-db-secret
+        secretName: prod-db-secret
         secretKey: password
 ```
 
@@ -124,13 +158,13 @@ initJob:
 initJob:
   enabled: true
   databases:
-    - name: opik
-      username: opik
-      password: opik_password  # or use passwordSecretRef
-    - name: comet
-      username: comet
+    - name: myapp
+      username: myapp
+      password: myapp_password  # or use passwordSecretRef
+    - name: production
+      username: produser
       passwordSecretRef:
-        secretName: comet-db-secret
+        secretName: prod-db-secret
         secretKey: password
 ```
 
@@ -235,6 +269,15 @@ mysql -h 127.0.0.1 -P 3306 -u root -p
 
 ## Upgrading
 
+### From Helm Repository
+
+```bash
+helm repo update
+helm upgrade my-mysql mysql/mysql -f values.yaml
+```
+
+### From Local Chart
+
 ```bash
 helm upgrade my-mysql ./ -f values.yaml
 ```
@@ -327,7 +370,7 @@ kubectl exec -it <pod-name> -- /bin/bash
 
 ## License
 
-This chart is provided as-is for Comet ML internal use.
+This chart is provided as-is.
 
 {{ template "helm-docs.versionFooter" . }}
 

@@ -3,174 +3,140 @@ run-name: "Publish MySQL Helm Chart ${{ github.ref_name }} by @${{ github.actor 
 
 on:
   workflow_dispatch:
-  push:
-    branches: ['main']
-    paths-ignore:
-      - '.github/**'
-      - 'README.md'
-      - 'examples/**'
+    inputs:
+      version:
+        type: string
+        required: false
+        description: Version (optional, will auto-increment if not provided)
+        default: ""
 
 jobs:
   publish-helm-chart:
-    runs-on: org
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
         - name: Checkout
           uses: actions/checkout@v4.1.1
           with:
-            token: ${{ secrets.GITHUB_TOKEN }}
+            ref: ${{ github.ref }}
+            fetch-tags: true
+            path: 'src'
+            fetch-depth: 0
+            token: ${{ secrets.GH_PAT_TO_ACCESS_GITHUB_API }}
+
+        - name: Checkout GH Pages branch
+          uses: actions/checkout@v4.1.1
+          with:
+            path: 'dest'
+            ref: 'gh-pages'
             fetch-depth: 0
 
+        - name: Install Helm
+          uses: azure/setup-helm@v4.2.0
+          with:
+            version: v3.13.0
+
         - name: Update Chart version
+          shell: bash
+          working-directory: src
           run: |
-            # Extract the version number from Chart.yaml
-            current_version=$(grep "^version:" Chart.yaml | awk '{print $2}')
-            echo "Current version: $current_version"
-            
-            # Check if we're on main branch
-            if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-              echo "On main branch - incrementing patch version"
-              
-              # Remove pre-release suffix if present (e.g., 1.0.4-2 -> 1.0.4)
+            # Use input parameter if provided (workflow_dispatch)
+            if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.version }}" ]; then
+              VERSION="${{ inputs.version }}"
+              echo "Using version from input parameter: $VERSION"
+            # Auto-increment on push to main
+            elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+              current_version=$(grep "^version:" Chart.yaml | awk '{print $2}')
               base_version=$(echo "$current_version" | sed 's/-.*$//')
-              
-              # Extract major, minor, patch
               major=$(echo "$base_version" | cut -d. -f1)
               minor=$(echo "$base_version" | cut -d. -f2)
               patch=$(echo "$base_version" | cut -d. -f3)
-              
-              # Increment patch version
               new_patch=$((patch + 1))
-              new_version="${major}.${minor}.${new_patch}"
-              
+              VERSION="${major}.${minor}.${new_patch}"
+              echo "Auto-incremented version to: $VERSION"
+            # Otherwise use version from Chart.yaml
             else
-              echo "On branch ${{ github.ref_name }} - adding/incrementing pre-release suffix"
-              
-              # Check if version already has pre-release suffix
-              if [[ "$current_version" == *"-"* ]]; then
-                # Extract base version and pre-release number
-                base_version=$(echo "$current_version" | sed 's/-.*$//')
-                pre_release=$(echo "$current_version" | sed 's/^.*-//')
-                
-                # Increment pre-release number
-                new_pre_release=$((pre_release + 1))
-                new_version="${base_version}-${new_pre_release}"
-              else
-                # Add pre-release suffix starting at 0
-                new_version="${current_version}-0"
-              fi
-            fi
-            
-            echo "New version: $new_version"
-            echo "VERSION_NAME=$new_version" | tee -a $GITHUB_ENV
-
-        - name: Update Chart.yaml with new version
-          run: |
-            # Update Chart.yaml with the new version
-            if [ -n "$VERSION_NAME" ]; then
-              sed -i "s/^version:.*/version: $VERSION_NAME/" Chart.yaml
-              echo "Updated Chart.yaml version to: $VERSION_NAME"
-              cat Chart.yaml | grep "^version:"
-            else
-              echo "ERROR: VERSION_NAME is not set"
+              echo "Do not publish helm chart from branches other than main"
               exit 1
             fi
+            
+            # Update Chart.yaml with the final version
+            sed -i "s/^version:.*/version: $VERSION/" Chart.yaml
+            echo "VERSION_NAME=$VERSION" >> $GITHUB_ENV
+            echo "Updated Chart.yaml to version: $VERSION"
 
         - name: Run lint on Helm chart
+          shell: bash
+          working-directory: src
           run: |
-              # No dependencies to add for MySQL chart (self-contained)
-              echo "Linting with all example configurations..."
-              
-              # Lint with default values.yaml
-              helm lint --values values.yaml .
-              
-              # Lint with all example files
-              for example in examples/*.yaml; do
-                if [ -f "$example" ]; then
-                  echo "Linting with $(basename $example)..."
-                  helm lint --values "$example" .
-                fi
-              done
-              
-              echo "✅ All lint checks passed!"
+            set -e
+            helm lint --values values.yaml .
 
         - name: Install helm-docs
+          shell: bash
           run: |
             HELM_DOCS_VERSION="1.14.2"
             wget -q https://github.com/norwoodj/helm-docs/releases/download/v${HELM_DOCS_VERSION}/helm-docs_${HELM_DOCS_VERSION}_Linux_x86_64.tar.gz
             tar -xzf helm-docs_${HELM_DOCS_VERSION}_Linux_x86_64.tar.gz
             chmod +x helm-docs
             sudo mv helm-docs /usr/local/bin/
-            echo "Installed helm-docs version:"
             helm-docs --version
 
         - name: Generate README with updated version badges
+          shell: bash
+          working-directory: src
           run: |
-            echo "Generating README.md with helm-docs..."
             helm-docs
             echo "README.md updated with version badges"
 
-        - name: Package and upload to Dev Helm repo
-          uses: comet-ml/gha-tools/release/helm@1.0.11
-          with:
-            aws-region: us-east-1
-            aws-role-to-assume: ${{ vars.DEV_ACTION_RUNNER_ROLE_ARN }}
-            aws-role-session-name: ${{ vars.ROLE_SESSION_NAME }}
-            helm-registry: s3://${{ vars.DEV_REPOSITORY_BUCKET }}/charts
-            charts-path: .
-            chart-version: ${{env.VERSION_NAME}}
-            helm-push-extra: --force --relative
-
-        - name: Package and upload to Public Helm repo
-          uses: comet-ml/gha-tools/release/helm@1.0.11
-          with:
-            aws-region: us-east-1
-            aws-role-to-assume: ${{ vars.PROD_ACTION_RUNNER_ROLE_ARN }}
-            aws-role-session-name: ${{ vars.ROLE_SESSION_NAME }}
-            helm-registry: s3://${{ vars.PROD_REPOSITORY_BUCKET }}/charts
-            charts-path: .
-            chart-version: ${{env.VERSION_NAME}}
-            helm-push-extra: --force --relative
-
-        - name: Commit and push version update
+        - name: Package helm chart
+          shell: bash
+          working-directory: src
           run: |
-            set -x
-            git config --local user.email "github-actions@comet.com"
-            git config --local user.name "github-actions"
-            
-            # Check if Chart.yaml or README.md were modified
-            if git diff --quiet Chart.yaml README.md; then
-              echo "No changes to Chart.yaml or README.md, skipping commit"
-            else
+            helm package --version ${{env.VERSION_NAME}} --app-version $(grep "^appVersion:" Chart.yaml | awk '{print $2}' | tr -d '"') . -d ../../dest
+            cp README.md ../dest/.
+
+        - name: Push New Files
+          shell: bash
+          working-directory: dest
+          run: |
+              helm repo index . --url https://comet-ml.github.io/comet-mysql-helm/
+              git config user.name "github-actions"
+              git config user.email "github-actions@comet.com"
+              git add $(git ls-files -o --exclude-standard)
+              git add index.yaml README.md
+              git commit -m "Release MySQL helm chart ${{env.VERSION_NAME}}"
+              git push
+
+        - name: Commit version update to branch ${{ github.ref_name }}
+          shell: bash
+          working-directory: src
+          env:
+            GITHUB_TOKEN: ${{ secrets.GH_PAT_TO_ACCESS_GITHUB_API }}
+          run: |
+            git config user.name "github-actions"
+            git config user.email "github-actions@comet.com"
+            if ! git diff --quiet Chart.yaml README.md; then
               git add Chart.yaml README.md
               git commit -m "bump chart version to ${{env.VERSION_NAME}}"
-              git push --no-verify origin HEAD:${{ github.ref_name }}
+              git push origin HEAD:${{ github.ref_name }}
               echo "✅ Version update and README committed and pushed"
             fi
 
         - name: Create git tag
+          shell: bash
+          working-directory: src
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: |
-            set -x
-            git config --local user.email "github-actions@comet.com"
-            git config --local user.name "github-actions"
+            git config user.name "github-actions"
+            git config user.email "github-actions@comet.com"
             git tag -f ${{env.VERSION_NAME}}
             git push --no-verify origin refs/tags/${{env.VERSION_NAME}}
 
         - name: Summary
           run: |
-            echo "## Helm Chart Published" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Version:** \`${{env.VERSION_NAME}}\`" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Add as Dependency" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "To use this chart as a dependency in another chart, add the following to your \`Chart.yaml\`:" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo '```yaml' >> $GITHUB_STEP_SUMMARY
-            echo 'dependencies:' >> $GITHUB_STEP_SUMMARY
-            echo '  - name: mysql' >> $GITHUB_STEP_SUMMARY
-            echo "    version: \"${{env.VERSION_NAME}}\"" >> $GITHUB_STEP_SUMMARY
-            echo '    repository: "https://helm.dev.comet.com/"' >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "Helm chart is published from branch ${{ github.ref_name }}, version is : ${{env.VERSION_NAME}}" >> $GITHUB_STEP_SUMMARY
   
 

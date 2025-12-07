@@ -1,15 +1,16 @@
 apiVersion: v2
 name: mysql
-description: A simple, standalone MySQL Helm chart with optional cluster support
+description: A simple, standalone MySQL Helm chart 
 type: application
-version: 0.1.7
+version: 0.1.30
 appVersion: "8.4.2"
 keywords:
   - mysql
   - database
   - sql
 maintainers:
-  - name: Comet ML
+  - name: Liya Katz
+    email: liyak@comet.com
 home: https://github.com/comet-ml/comet-mysql-helm
 sources:
   - https://github.com/mysql/mysql-server

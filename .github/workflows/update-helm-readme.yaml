@@ -11,7 +11,7 @@ on:
 
 jobs:
   update-readme:
-    runs-on: org
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout

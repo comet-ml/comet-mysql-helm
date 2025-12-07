@@ -1,7 +1,7 @@
 # Complete MySQL setup with init-job and automated backups
 # This demonstrates all available features with mixed password methods
 # Prerequisites for production database:
-#   kubectl create secret generic comet-db-secret --from-literal=password=comet_password
+#   kubectl create secret generic prod-db-secret --from-literal=password=prod_password
 #
 # Usage: helm install my-mysql ./ -f examples/complete-setup-values.yaml
 
@@ -14,16 +14,16 @@ auth:
 initJob:
   enabled: true
   databases:
-    # Opik database - plain text (dev/test)
-    - name: opik
-      username: opik
-      password: opik_password
+    # MyApp database - plain text (dev/test)
+    - name: myapp
+      username: myapp
+      password: myapp_password
     
-    # Comet database - secret reference (production)
-    - name: comet
-      username: comet
+    # Production database - secret reference (production)
+    - name: production
+      username: produser
       passwordSecretRef:
-        secretName: comet-db-secret
+        secretName: prod-db-secret
         secretKey: password
 
 # Enable automated backups to S3
