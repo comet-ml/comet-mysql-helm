@@ -4,6 +4,12 @@ run-name: "Lint Helm Chart ${{ github.ref_name }} by @${{ github.actor }}"
 on:
   pull_request:
     branches: ['main']
+  push:
+    branches: ['main']
+    paths-ignore:
+      - '.github/**'
+      - 'README.*'
+      - '.gitignore'
 
 jobs:
   lint:
