@@ -9,23 +9,23 @@ auth:
 initdbScripts:
   # Script 1: Create database and user
   createdb.sql: |-
-    CREATE DATABASE IF NOT EXISTS opik 
+    CREATE DATABASE IF NOT EXISTS myapp 
       DEFAULT CHARACTER SET utf8 
       DEFAULT COLLATE utf8_general_ci;
     
-    CREATE USER IF NOT EXISTS 'opik'@'%' IDENTIFIED BY 'opik';
-    GRANT ALL PRIVILEGES ON opik.* TO 'opik'@'%';
+    CREATE USER IF NOT EXISTS 'myapp'@'%' IDENTIFIED BY 'myapp_password';
+    GRANT ALL PRIVILEGES ON myapp.* TO 'myapp'@'%';
     FLUSH PRIVILEGES;
   
   # Script 2: Create additional database
   # Note: Files are executed in alphabetical order
-  02-create-comet-db.sql: |-
-    CREATE DATABASE IF NOT EXISTS comet 
+  02-create-prod-db.sql: |-
+    CREATE DATABASE IF NOT EXISTS production 
       DEFAULT CHARACTER SET utf8mb4 
       DEFAULT COLLATE utf8mb4_unicode_ci;
     
-    CREATE USER IF NOT EXISTS 'comet'@'%' IDENTIFIED BY 'comet_password';
-    GRANT ALL PRIVILEGES ON comet.* TO 'comet'@'%';
+    CREATE USER IF NOT EXISTS 'produser'@'%' IDENTIFIED BY 'prod_password';
+    GRANT ALL PRIVILEGES ON production.* TO 'produser'@'%';
     FLUSH PRIVILEGES;
   
   # Script 3: Additional setup (runs last due to alphabetical order)

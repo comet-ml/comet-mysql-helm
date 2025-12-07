@@ -25,8 +25,8 @@ backup:
   retention: 7
   
   databases:
-    - opik
-    - comet
+    - myapp
+    - production
   
   resources:
     requests:
@@ -39,7 +39,7 @@ backup:
 # MySQL configuration (customize as needed)
 auth:
   rootPassword: "changeme"
-  database: "opik"
+  database: "myapp"
 
 persistence:
   enabled: true

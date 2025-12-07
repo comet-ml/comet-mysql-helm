@@ -33,7 +33,7 @@ restore:
 # MySQL configuration (must match the original backup)
 auth:
   rootPassword: "changeme"
-  database: "opik"
+  database: "myapp"
 
 persistence:
   enabled: true

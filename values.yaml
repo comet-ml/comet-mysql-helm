@@ -185,9 +185,9 @@ initdbScripts: {}
 # Example:
 # initdbScripts:
 #   createdb.sql: |-
-#     CREATE DATABASE IF NOT EXISTS opik DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
-#     CREATE USER IF NOT EXISTS 'opik'@'%' IDENTIFIED BY 'opik';
-#     GRANT ALL ON `opik`.* TO 'opik'@'%';
+#     CREATE DATABASE IF NOT EXISTS myapp DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+#     CREATE USER IF NOT EXISTS 'myapp'@'%' IDENTIFIED BY 'myapp_password';
+#     GRANT ALL ON `myapp`.* TO 'myapp'@'%';
 #     FLUSH PRIVILEGES;
 
 ## Init job configuration
@@ -207,15 +207,15 @@ initJob:
   ##   2. Secret reference: passwordSecretRef: {secretName: "my-secret", secretKey: "password"}
   databases: []
   # Example 1: Plain text password (for dev/test)
-  # - name: opik
-  #   username: opik
-  #   password: opik_password
+  # - name: myapp
+  #   username: myapp
+  #   password: myapp_password
   # 
   # Example 2: Secret reference (for production)
-  # - name: comet
-  #   username: comet
+  # - name: production
+  #   username: produser
   #   passwordSecretRef:
-  #     secretName: comet-db-secret
+  #     secretName: prod-db-secret
   #     secretKey: password
   #
   # Example 3: Mixed approach

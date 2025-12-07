@@ -12,7 +12,7 @@
 #   - Compliance requirements
 #
 # Prerequisites for production databases:
-#   kubectl create secret generic comet-db-secret --from-literal=password=comet_secure_password
+#   kubectl create secret generic prod-db-secret --from-literal=password=prod_secure_password
 #
 # Usage: helm install my-mysql ./ -f examples/init-job-mixed-values.yaml
 
@@ -26,20 +26,20 @@ initJob:
   enabled: true
   databases:
     # Development database - plain text password (OK for dev)
-    - name: opik_dev
-      username: opik_dev
-      password: opik_dev_password
+    - name: myapp_dev
+      username: myapp_dev
+      password: myapp_dev_password
     
     # Test database - plain text password (OK for test)
-    - name: opik_test
-      username: opik_test
-      password: opik_test_password
+    - name: myapp_test
+      username: myapp_test
+      password: myapp_test_password
     
     # Production database - secret reference (secure)
-    - name: comet
-      username: comet
+    - name: production
+      username: produser
       passwordSecretRef:
-        secretName: comet-db-secret
+        secretName: prod-db-secret
         secretKey: password
 
 primary:
