@@ -1,6 +1,7 @@
 MySQL Helm Chart
 
-![Version: 1.0.4](https://img.shields.io/badge/Version-1.0.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.4.2](https://img.shields.io/badge/AppVersion-8.4.2-informational?style=flat-square)
+![Version: 1.0.5](https://img.shields.io/badge/Version-1.0.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.4.2](https://img.shields.io/badge/AppVersion-8.4.2-informational?style=flat-square)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/comet-mysql-helm)](https://artifacthub.io/packages/search?repo=comet-mysql-helm)
 
 A simple, standalone MySQL Helm chart
 
@@ -67,7 +68,7 @@ To use this chart as a dependency in another Helm chart, add it to your `Chart.y
 ```yaml
 dependencies:
   - name: mysql
-    version: "1.0.4"
+    version: "1.0.5"
     repository: "https://comet-ml.github.io/comet-mysql-helm/"
     condition: mysql.enabled
 ```
@@ -168,7 +169,7 @@ You can pass additional command-line arguments directly to the `mysqld` process:
 
 ```yaml
 primary:
-  extraArgs:
+  extraFlags:
     - "--max-connections=500"
     - "--max-allowed-packet=64M"
     - "--log-bin-trust-function-creators=1"
@@ -363,7 +364,6 @@ kubectl exec -it <pod-name> -- /bin/bash
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | architecture.mode | string | `"standalone"` |  |
-| architecture.replication.replicas | int | `2` |  |
 | auth.database | string | `"my_database"` |  |
 | auth.existingSecret | string | `""` |  |
 | auth.password | string | `""` |  |
@@ -423,7 +423,8 @@ kubectl exec -it <pod-name> -- /bin/bash
 | primary.configuration | string | `"[mysqld]\nauthentication_policy='* ,,'\nskip-name-resolve\nexplicit_defaults_for_timestamp\nport=3306\ndatadir=/var/lib/mysql\nsocket=/var/run/mysqld/mysqld.sock\npid-file=/var/run/mysqld/mysqld.pid\nmax_allowed_packet=16M\nbind-address=0.0.0.0\ncharacter-set-server=utf8mb4\ncollation-server=utf8mb4_unicode_ci\nslow_query_log=0\nlong_query_time=10.0"` |  |
 | primary.dataDir | string | `"/var/lib/mysql"` |  |
 | primary.existingConfigmap | string | `""` |  |
-| primary.extraArgs | list | `[]` |  |
+| primary.extraEnvVars | list | `[]` |  |
+| primary.extraFlags | list | `[]` |  |
 | primary.nodeSelector | object | `{}` |  |
 | primary.persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | primary.persistence.annotations | object | `{}` |  |
