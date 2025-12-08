@@ -168,7 +168,7 @@ You can pass additional command-line arguments directly to the `mysqld` process:
 
 ```yaml
 primary:
-  extraArgs:
+  extraFlags:
     - "--max-connections=500"
     - "--max-allowed-packet=64M"
     - "--log-bin-trust-function-creators=1"
@@ -423,7 +423,7 @@ kubectl exec -it <pod-name> -- /bin/bash
 | primary.configuration | string | `"[mysqld]\nauthentication_policy='* ,,'\nskip-name-resolve\nexplicit_defaults_for_timestamp\nport=3306\ndatadir=/var/lib/mysql\nsocket=/var/run/mysqld/mysqld.sock\npid-file=/var/run/mysqld/mysqld.pid\nmax_allowed_packet=16M\nbind-address=0.0.0.0\ncharacter-set-server=utf8mb4\ncollation-server=utf8mb4_unicode_ci\nslow_query_log=0\nlong_query_time=10.0"` |  |
 | primary.dataDir | string | `"/var/lib/mysql"` |  |
 | primary.existingConfigmap | string | `""` |  |
-| primary.extraArgs | list | `[]` |  |
+| primary.extraFlags | list | `[]` |  |
 | primary.nodeSelector | object | `{}` |  |
 | primary.persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | primary.persistence.annotations | object | `{}` |  |

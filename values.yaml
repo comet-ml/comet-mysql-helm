@@ -51,9 +51,6 @@ architecture:
   ## @param architecture.mode MySQL architecture mode (standalone or replication)
   ## Options: standalone, replication (future)
   mode: standalone
-  ## @param architecture.replication.replicas Number of replicas (used when mode is 'replication')
-  replication:
-    replicas: 2
 
 ## MySQL primary configuration
 primary:
@@ -83,9 +80,21 @@ primary:
   ## @param primary.existingConfigmap Name of existing ConfigMap with MySQL primary configuration
   existingConfigmap: ""
 
-  ## @param primary.extraArgs Additional command-line arguments to pass to mysqld
+  ## @param primary.extraFlags Additional command-line arguments to pass to mysqld
   ## Example: ["--max-connections=500", "--log-bin-trust-function-creators=1"]
-  extraArgs: []
+  extraFlags: []
+
+  ## @param primary.extraEnvVars Array with extra environment variables to add to MySQL container
+  ## Example:
+  ##   extraEnvVars:
+  ##     - name: MY_ENV_VAR
+  ##       value: "my-value"
+  ##     - name: MY_SECRET_ENV_VAR
+  ##       valueFrom:
+  ##         secretKeyRef:
+  ##           name: my-secret
+  ##           key: my-key
+  extraEnvVars: []
 
   ## MySQL primary persistence configuration
   persistence:

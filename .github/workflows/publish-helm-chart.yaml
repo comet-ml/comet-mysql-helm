@@ -73,11 +73,19 @@ jobs:
             set -e
             helm lint --values values.yaml .
 
+        - name: Install helm-docs
+          run: |
+            HELM_DOCS_VERSION="1.14.2"
+            wget -q https://github.com/norwoodj/helm-docs/releases/download/v${HELM_DOCS_VERSION}/helm-docs_${HELM_DOCS_VERSION}_Linux_x86_64.tar.gz
+            tar -xzf helm-docs_${HELM_DOCS_VERSION}_Linux_x86_64.tar.gz
+            chmod +x helm-docs
+            sudo mv helm-docs /usr/local/bin/
+
         - name: Update README.md
-          uses: losisin/helm-docs-github-action@v1
-          with:
-            chart-search-root: .
-            git-push: false
+          shell: bash
+          working-directory: src
+          run: |
+            helm-docs --values-file values.yaml --output-file README.md --chart-search-root . --template-files README.md.gotmpl
 
         - name: Package helm chart
           shell: bash

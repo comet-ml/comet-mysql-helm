@@ -56,12 +56,6 @@ spec:
             runAsNonRoot: {{ .Values.containerSecurityContext.runAsNonRoot }}
             {{- end }}
           {{- end }}
-          {{- if .Values.primary.extraArgs }}
-          args:
-            {{- range .Values.primary.extraArgs }}
-            - {{ . | quote }}
-            {{- end }}
-          {{- end }}
           env:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
@@ -80,6 +74,21 @@ spec:
                 secretKeyRef:
                   name: {{ include "mysql.secretName" . }}
                   key: mysql-password
+            {{- end }}
+            {{- if .Values.primary.extraFlags }}
+            - name: MYSQL_EXTRA_FLAGS
+              value: "{{ .Values.primary.extraFlags }}"
+            {{- end }}
+            {{- if .Values.primary.extraEnvVars }}
+            {{- range .Values.primary.extraEnvVars }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom:
+                {{- toYaml .valueFrom | nindent 16 }}
+              {{- end }}
+            {{- end }}
             {{- end }}
           ports:
             - name: mysql

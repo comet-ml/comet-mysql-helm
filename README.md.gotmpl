@@ -5,6 +5,7 @@ MySQL Helm Chart
 {{- $chart := fromYaml $chartFile }}
 
 ![Version: {{ $chart.version }}](https://img.shields.io/badge/Version-{{ $chart.version }}-informational?style=flat-square) ![Type: {{ $chart.type }}](https://img.shields.io/badge/Type-{{ $chart.type }}-informational?style=flat-square) ![AppVersion: {{ $chart.appVersion }}](https://img.shields.io/badge/AppVersion-{{ $chart.appVersion }}-informational?style=flat-square)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/comet-mysql-helm)](https://artifacthub.io/packages/search?repo=comet-mysql-helm)
 
 {{- end }}
 
@@ -174,7 +175,7 @@ You can pass additional command-line arguments directly to the `mysqld` process:
 
 ```yaml
 primary:
-  extraArgs:
+  extraFlags:
     - "--max-connections=500"
     - "--max-allowed-packet=64M"
     - "--log-bin-trust-function-creators=1"

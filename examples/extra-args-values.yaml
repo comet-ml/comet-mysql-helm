@@ -7,7 +7,7 @@ auth:
 primary:
   # Additional command-line arguments passed to mysqld
   # These override or supplement settings in my.cnf
-  extraArgs:
+  extraFlags:
     - "--max-connections=500"
     - "--max-allowed-packet=64M"
     - "--log-bin-trust-function-creators=1"
