@@ -81,8 +81,9 @@ primary:
   existingConfigmap: ""
 
   ## @param primary.extraFlags Additional command-line arguments to pass to mysqld
-  ## Example: ["--max-connections=500", "--log-bin-trust-function-creators=1"]
-  extraFlags: []
+  ## Space-separated string of flags
+  ## Example: "--max-connections=500 --log-bin-trust-function-creators=1"
+  extraFlags: ""
 
   ## @param primary.extraEnvVars Array with extra environment variables to add to MySQL container
   ## Example:

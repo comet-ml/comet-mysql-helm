@@ -57,6 +57,10 @@ spec:
               
               echo "Initializing databases and users..."
               
+              # Enable log_bin_trust_function_creators to allow triggers/functions without SUPER privilege
+              echo "Setting log_bin_trust_function_creators=1..."
+              mysql -h {{ include "mysql.fullname" . }} -u root -p${MYSQL_ROOT_PASSWORD} -e "SET GLOBAL log_bin_trust_function_creators=1;" || echo "Warning: Could not set log_bin_trust_function_creators (may already be set or binary logging disabled)"
+              
               {{- range $index, $db := .Values.initJob.databases }}
               echo "Creating database '{{ $db.name }}' and user '{{ $db.username }}'..."
               mysql -h {{ include "mysql.fullname" $ }} -u root -p${MYSQL_ROOT_PASSWORD} -e "CREATE DATABASE IF NOT EXISTS \`{{ $db.name }}\` DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_unicode_ci;"

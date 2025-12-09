@@ -122,3 +122,17 @@ Return the configmap name for MySQL configuration
 {{- end }}
 {{- end }}
 
+{{/*
+Convert extraFlags string to my.cnf format
+Input: "--max-connections=500 --log-bin-trust-function-creators=1"
+Output: "max-connections=500\nlog-bin-trust-function-creators=1"
+*/}}
+{{- define "mysql.extraFlagsToConfig" -}}
+{{- if .Values.primary.extraFlags }}
+{{- $flags := trim .Values.primary.extraFlags }}
+{{- $flags = regexReplaceAll " +--" $flags "\n" }}
+{{- $flags = regexReplaceAll "^--" $flags "" }}
+{{- $flags }}
+{{- end }}
+{{- end }}
+

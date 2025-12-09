@@ -15,6 +15,10 @@ data:
     datadir={{ .Values.primary.dataDir }}
     {{- end }}
     {{ $config | nindent 4 }}
+    {{- if .Values.primary.extraFlags }}
+    # Additional flags from primary.extraFlags
+    {{- include "mysql.extraFlagsToConfig" . | nindent 4 }}
+    {{- end }}
     {{- if .Values.tls.enabled }}
     # TLS/SSL Configuration
     ssl-ca=/etc/mysql/ssl/ca.crt

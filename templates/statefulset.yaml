@@ -75,10 +75,6 @@ spec:
                   name: {{ include "mysql.secretName" . }}
                   key: mysql-password
             {{- end }}
-            {{- if .Values.primary.extraFlags }}
-            - name: MYSQL_EXTRA_FLAGS
-              value: "{{ .Values.primary.extraFlags }}"
-            {{- end }}
             {{- if .Values.primary.extraEnvVars }}
             {{- range .Values.primary.extraEnvVars }}
             - name: {{ .name }}
