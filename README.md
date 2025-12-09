@@ -1,6 +1,6 @@
 MySQL Helm Chart
 
-![Version: 1.0.5](https://img.shields.io/badge/Version-1.0.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.4.2](https://img.shields.io/badge/AppVersion-8.4.2-informational?style=flat-square)
+![Version: 1.0.6](https://img.shields.io/badge/Version-1.0.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.4.2](https://img.shields.io/badge/AppVersion-8.4.2-informational?style=flat-square)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/comet-mysql-helm)](https://artifacthub.io/packages/search?repo=comet-mysql-helm)
 
 A simple, standalone MySQL Helm chart
@@ -68,7 +68,7 @@ To use this chart as a dependency in another Helm chart, add it to your `Chart.y
 ```yaml
 dependencies:
   - name: mysql
-    version: "1.0.5"
+    version: "1.0.6"
     repository: "https://comet-ml.github.io/comet-mysql-helm/"
     condition: mysql.enabled
 ```
@@ -165,24 +165,50 @@ initJob:
 
 ### MySQL Command-Line Arguments
 
-You can pass additional command-line arguments directly to the `mysqld` process:
+You can pass additional command-line arguments to MySQL in two ways:
+
+#### Method 1: Using `primary.extraFlags` (Appends to Configuration)
+
+The `extraFlags` property automatically converts command-line flags to MySQL configuration format and **appends** them to the existing configuration (default or custom):
 
 ```yaml
 primary:
-  extraFlags:
-    - "--max-connections=500"
-    - "--max-allowed-packet=64M"
-    - "--log-bin-trust-function-creators=1"
-    - "--thread-stack=256K"
+  extraFlags: "--max-connections=500 --max-allowed-packet=64M --log-bin-trust-function-creators=1 --thread-stack=256K"
+```
+
+**Benefits:**
+- Flags are automatically converted to `my.cnf` format
+- **Appends** to the default configuration (or your custom `primary.configuration`)
+
+#### Method 2: Direct Configuration (Complete Override)
+
+You can provide a complete MySQL configuration that **replaces** the default:
+
+```yaml
+primary:
+  configuration: |-
+    [mysqld]
+    authentication_policy='* ,,'
+    skip-name-resolve
+    port=3306
+    datadir=/var/lib/mysql
+    max-connections=500
+    max-allowed-packet=64M
+    log-bin-trust-function-creators=1
+    thread-stack=256K
 ```
 
 **Use cases:**
-- Override configuration values at runtime
-- Set values that can't be configured in `my.cnf`
-- Apply temporary settings without changing the config file
-- Test different MySQL settings
+- Complete control over the MySQL configuration
+- When you need to override the entire default configuration
+- Custom configurations that differ significantly from defaults
 
-**Note:** Command-line arguments take precedence over `my.cnf` configuration. See `examples/extra-args-values.yaml` for a complete example.
+**Note:**
+- `primary.extraFlags` **appends** flags to the existing configuration (default or custom)
+- `primary.configuration` **completely replaces** the default configuration
+- You can use both together: `primary.configuration` provides the base config, and `primary.extraFlags` adds additional flags on top
+
+See `examples/extra-args-values.yaml` for a complete example.
 
 ### Automated Backups
 
@@ -424,7 +450,7 @@ kubectl exec -it <pod-name> -- /bin/bash
 | primary.dataDir | string | `"/var/lib/mysql"` |  |
 | primary.existingConfigmap | string | `""` |  |
 | primary.extraEnvVars | list | `[]` |  |
-| primary.extraFlags | list | `[]` |  |
+| primary.extraFlags | string | `""` |  |
 | primary.nodeSelector | object | `{}` |  |
 | primary.persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | primary.persistence.annotations | object | `{}` |  |
