@@ -45,5 +45,5 @@ initJob:
 primary:
   persistence:
     enabled: true
-    size: 20Gi
+    size: 21Gi
 
