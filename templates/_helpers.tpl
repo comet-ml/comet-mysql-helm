@@ -136,3 +136,22 @@ Output: "max-connections=500\nlog-bin-trust-function-creators=1"
 {{- end }}
 {{- end }}
 
+{{/*
+Return the proper MySQL metrics exporter image name
+*/}}
+{{- define "mysql.metrics.image" -}}
+{{- $registryName := .Values.metrics.image.registry -}}
+{{- $repositoryName := .Values.metrics.image.repository -}}
+{{- $tag := .Values.metrics.image.tag | toString -}}
+{{- if .Values.global }}
+    {{- if .Values.global.imageRegistry }}
+     {{- $registryName = .Values.global.imageRegistry -}}
+    {{- end -}}
+{{- end -}}
+{{- if $registryName }}
+{{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- else }}
+{{- printf "%s:%s" $repositoryName $tag -}}
+{{- end }}
+{{- end }}
+
