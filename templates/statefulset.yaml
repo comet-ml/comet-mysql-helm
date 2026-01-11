@@ -132,6 +132,49 @@ spec:
               mountPath: /etc/mysql/ssl
               readOnly: true
             {{- end }}
+        {{- if .Values.metrics.enabled }}
+        - name: metrics
+          image: {{ include "mysql.metrics.image" . }}
+          imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
+          env:
+            - name: MYSQLD_EXPORTER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mysql.secretName" . }}
+                  key: mysql-root-password
+            - name: DATA_SOURCE_NAME
+              value: "root:$(MYSQLD_EXPORTER_PASSWORD)@(127.0.0.1:3306)/"
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.metrics.containerPort }}
+              protocol: TCP
+          {{- if .Values.metrics.extraArgs }}
+          args:
+            {{- range .Values.metrics.extraArgs }}
+            - {{ . | quote }}
+            {{- end }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: metrics
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          {{- with .Values.metrics.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
       volumes:
         - name: config
           configMap:
