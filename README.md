@@ -1,6 +1,6 @@
 MySQL Helm Chart
 
-![Version: 1.0.6](https://img.shields.io/badge/Version-1.0.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.4.2](https://img.shields.io/badge/AppVersion-8.4.2-informational?style=flat-square)
+![Version: 1.0.7](https://img.shields.io/badge/Version-1.0.7-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.4.2](https://img.shields.io/badge/AppVersion-8.4.2-informational?style=flat-square)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/comet-mysql-helm)](https://artifacthub.io/packages/search?repo=comet-mysql-helm)
 
 A simple, standalone MySQL Helm chart
@@ -68,7 +68,7 @@ To use this chart as a dependency in another Helm chart, add it to your `Chart.y
 ```yaml
 dependencies:
   - name: mysql
-    version: "1.0.6"
+    version: "1.0.7"
     repository: "https://comet-ml.github.io/comet-mysql-helm/"
     condition: mysql.enabled
 ```
@@ -433,6 +433,29 @@ kubectl exec -it <pod-name> -- /bin/bash
 | initJob.resources.requests.cpu | string | `"100m"` |  |
 | initJob.resources.requests.memory | string | `"128Mi"` |  |
 | initdbScripts | object | `{}` |  |
+| metrics.containerPort | int | `9104` |  |
+| metrics.enabled | bool | `false` |  |
+| metrics.extraArgs | list | `[]` |  |
+| metrics.image.pullPolicy | string | `"IfNotPresent"` |  |
+| metrics.image.registry | string | `"docker.io"` |  |
+| metrics.image.repository | string | `"prom/mysqld-exporter"` |  |
+| metrics.image.tag | string | `"v0.16.0"` |  |
+| metrics.prometheusRule.enabled | bool | `false` |  |
+| metrics.prometheusRule.labels | object | `{}` |  |
+| metrics.prometheusRule.namespace | string | `""` |  |
+| metrics.prometheusRule.rules | list | `[]` |  |
+| metrics.resources.limits.cpu | string | `"100m"` |  |
+| metrics.resources.limits.memory | string | `"128Mi"` |  |
+| metrics.resources.requests.cpu | string | `"50m"` |  |
+| metrics.resources.requests.memory | string | `"64Mi"` |  |
+| metrics.serviceMonitor.annotations | object | `{}` |  |
+| metrics.serviceMonitor.enabled | bool | `false` |  |
+| metrics.serviceMonitor.interval | string | `"30s"` |  |
+| metrics.serviceMonitor.labels | object | `{}` |  |
+| metrics.serviceMonitor.metricRelabelings | list | `[]` |  |
+| metrics.serviceMonitor.namespace | string | `""` |  |
+| metrics.serviceMonitor.relabelings | list | `[]` |  |
+| metrics.serviceMonitor.scrapeTimeout | string | `"10s"` |  |
 | nameOverride | string | `""` |  |
 | networkPolicy.allowExternal | bool | `false` |  |
 | networkPolicy.allowedNamespaces | list | `[]` |  |
