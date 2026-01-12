@@ -29,6 +29,12 @@ spec:
       {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) .Values.service.nodePort }}
       nodePort: {{ .Values.service.nodePort }}
       {{- end }}
+    {{- if .Values.metrics.enabled }}
+    - name: metrics
+      port: {{ .Values.metrics.containerPort }}
+      targetPort: metrics
+      protocol: TCP
+    {{- end }}
   selector:
     {{- include "mysql.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: primary

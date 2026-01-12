@@ -351,6 +351,78 @@ backup:
   ## @param backup.tolerations Tolerations for backup pod assignment
   tolerations: []
 
+## @section Metrics Configuration
+
+## Prometheus metrics exporter configuration
+metrics:
+  ## @param metrics.enabled Enable Prometheus metrics exporter sidecar
+  enabled: false
+  
+  ## MySQL exporter image
+  image:
+    ## @param metrics.image.registry MySQL exporter image registry
+    registry: docker.io
+    ## @param metrics.image.repository MySQL exporter image repository
+    repository: prom/mysqld-exporter
+    ## @param metrics.image.tag MySQL exporter image tag
+    tag: "v0.16.0"
+    ## @param metrics.image.pullPolicy MySQL exporter image pull policy
+    pullPolicy: IfNotPresent
+  
+  ## @param metrics.containerPort MySQL exporter container port
+  containerPort: 9104
+  
+  ## @param metrics.resources MySQL exporter resource requests and limits
+  resources:
+    limits:
+      memory: 128Mi
+      cpu: 100m
+    requests:
+      memory: 64Mi
+      cpu: 50m
+  
+  ## @param metrics.extraArgs Extra arguments for mysqld_exporter
+  ## Example: ["--collect.info_schema.tables", "--collect.info_schema.innodb_metrics"]
+  extraArgs: []
+  
+  ## Prometheus Service Monitor
+  serviceMonitor:
+    ## @param metrics.serviceMonitor.enabled Create ServiceMonitor resource for Prometheus Operator
+    enabled: false
+    ## @param metrics.serviceMonitor.namespace Namespace for the ServiceMonitor (defaults to release namespace)
+    namespace: ""
+    ## @param metrics.serviceMonitor.interval Scrape interval
+    interval: 30s
+    ## @param metrics.serviceMonitor.scrapeTimeout Scrape timeout
+    scrapeTimeout: 10s
+    ## @param metrics.serviceMonitor.labels Additional labels for ServiceMonitor
+    labels: {}
+    ## @param metrics.serviceMonitor.annotations Additional annotations for ServiceMonitor
+    annotations: {}
+    ## @param metrics.serviceMonitor.relabelings RelabelConfigs to apply to samples before scraping
+    relabelings: []
+    ## @param metrics.serviceMonitor.metricRelabelings MetricRelabelConfigs to apply to samples before ingestion
+    metricRelabelings: []
+  
+  ## Prometheus Rules
+  prometheusRule:
+    ## @param metrics.prometheusRule.enabled Create PrometheusRule resource for Prometheus Operator
+    enabled: false
+    ## @param metrics.prometheusRule.namespace Namespace for the PrometheusRule (defaults to release namespace)
+    namespace: ""
+    ## @param metrics.prometheusRule.labels Additional labels for PrometheusRule
+    labels: {}
+    ## @param metrics.prometheusRule.rules PrometheusRule definitions
+    ## Example:
+    ##   - alert: MySQLDown
+    ##     expr: mysql_up == 0
+    ##     for: 5m
+    ##     labels:
+    ##       severity: critical
+    ##     annotations:
+    ##       summary: MySQL is down
+    rules: []
+
 ## @section Restore Configuration
 
 ## Restore job configuration
