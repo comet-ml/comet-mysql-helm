@@ -132,18 +132,10 @@ jobs:
             git tag -f ${{env.VERSION_NAME}}
             git push --no-verify origin refs/tags/${{env.VERSION_NAME}}
 
-        - name: Create Release Changelog
-          id: release_changelog
-          uses:  jaywcjlove/changelog-generator@v2.2.2
-          with:
-            token: ${{ secrets.GH_PAT_TO_ACCESS_GITHUB_API }}
-            show-emoji: "false"
-
         - name: Create GitHub release
           uses: mikepenz/action-gh-release@v0.4.1
           with:
             tag_name: ${{env.VERSION_NAME}}
-            body: ${{steps.release_changelog.outputs.changelog}}
             generate_release_notes: true
 
         - name: Summary
