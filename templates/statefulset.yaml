@@ -220,7 +220,11 @@ spec:
       {{- end }}
   {{- if and .Values.primary.persistence.enabled (not .Values.primary.persistence.existingClaim) }}
   volumeClaimTemplates:
-    - metadata:
+    # apiVersion/kind must stay explicit: this is an atomic list, so an Argo CD
+    # ServerSideApply diff needs the fields the API server would default, else forever OutOfSync.
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: data
         labels:
           {{- include "mysql.selectorLabels" . | nindent 10 }}
