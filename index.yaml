@@ -3,7 +3,27 @@ entries:
   mysql:
   - apiVersion: v2
     appVersion: 8.4.2
-    created: "2026-01-12T18:43:04.463184373Z"
+    created: "2026-09-15T12:14:16.980712129Z"
+    description: A simple, standalone MySQL Helm chart
+    digest: e6d1d414269f1167841508a6a8a5d6dd1573ec62df6f57809f70ba58e442b251
+    home: https://github.com/comet-ml/comet-mysql-helm
+    keywords:
+    - mysql
+    - database
+    - sql
+    maintainers:
+    - email: liyak@comet.com
+      name: Liya Katz
+    name: mysql
+    sources:
+    - https://github.com/mysql/mysql-server
+    type: application
+    urls:
+    - https://comet-ml.github.io/comet-mysql-helm/mysql-1.0.8.tgz
+    version: 1.0.8
+  - apiVersion: v2
+    appVersion: 8.4.2
+    created: "2026-09-15T12:14:16.979199181Z"
     description: A simple, standalone MySQL Helm chart
     digest: 6345517a72089db69f142c7c68406b7292780ed809fcaddbfc10025f08d3a1c1
     home: https://github.com/comet-ml/comet-mysql-helm
@@ -23,7 +43,7 @@ entries:
     version: 1.0.7
   - apiVersion: v2
     appVersion: 8.4.2
-    created: "2026-01-12T18:43:04.461640291Z"
+    created: "2026-09-15T12:14:16.977708476Z"
     description: A simple, standalone MySQL Helm chart
     digest: 844715bc9729935b99f8c3762c12085cbe7115a154b298acd89aa1e399f3ceb5
     home: https://github.com/comet-ml/comet-mysql-helm
@@ -43,7 +63,7 @@ entries:
     version: 1.0.6
   - apiVersion: v2
     appVersion: 8.4.2
-    created: "2026-01-12T18:43:04.460374299Z"
+    created: "2026-09-15T12:14:16.976384183Z"
     description: A simple, standalone MySQL Helm chart
     digest: a53f4935e1d0fe8be66a5cc4e1383dc8a75d8874a0ce2ebf54a5dee42ce50f19
     home: https://github.com/comet-ml/comet-mysql-helm
@@ -63,7 +83,7 @@ entries:
     version: 1.0.5
   - apiVersion: v2
     appVersion: 8.4.2
-    created: "2026-01-12T18:43:04.459081937Z"
+    created: "2026-09-15T12:14:16.975089144Z"
     description: A simple, standalone MySQL Helm chart
     digest: 3382fc6ffbaa8bb208c9ea6dc2142b1900388cec3400c8fbcd5eb21a5ac3d854
     home: https://github.com/comet-ml/comet-mysql-helm
@@ -81,4 +101,4 @@ entries:
     urls:
     - https://comet-ml.github.io/comet-mysql-helm/mysql-1.0.4.tgz
     version: 1.0.4
-generated: "2026-01-12T18:43:04.456819318Z"
+generated: "2026-09-15T12:14:16.973534763Z"
