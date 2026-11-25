@@ -10,24 +10,29 @@ on:
         description: Version (optional, will auto-increment if not provided)
         default: ""
 
+permissions:
+  contents: read
+
 jobs:
   publish-helm-chart:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write  # pushes gh-pages and creates the release
 
     steps:
         # comet-ci App token: the version bump is pushed straight to main, which only
         # allow-listed actors may do without a PR. Git reuses it for the tag push too.
         - name: Mint GitHub App token
           id: app-token
-          uses: actions/create-github-app-token@v3.3.0
+          uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
           with:
             client-id: ${{ vars.COMET_CI_APP_CLIENT_ID }}
             private-key: ${{ secrets.COMET_CI_APP_PRIVATE_KEY }}
             permission-contents: write
 
         - name: Checkout
-          uses: actions/checkout@v4.1.1
+          uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
           with:
             ref: ${{ github.ref }}
             fetch-tags: true
@@ -36,14 +41,14 @@ jobs:
             token: ${{ steps.app-token.outputs.token }}
 
         - name: Checkout GH Pages branch
-          uses: actions/checkout@v4.1.1
+          uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
           with:
             path: 'dest'
             ref: 'gh-pages'
             fetch-depth: 0
 
         - name: Install Helm
-          uses: azure/setup-helm@v4.2.0
+          uses: azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e # v5
           with:
             version: v3.13.0
 
@@ -139,7 +144,7 @@ jobs:
             git push --no-verify origin refs/tags/${{env.VERSION_NAME}}
 
         - name: Create GitHub release
-          uses: mikepenz/action-gh-release@v0.4.1
+          uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3
           with:
             tag_name: ${{env.VERSION_NAME}}
             generate_release_notes: true

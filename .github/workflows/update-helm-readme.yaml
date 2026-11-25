@@ -9,18 +9,23 @@ on:
       - "README.md.gotmpl"
       - "templates/**"
 
+permissions:
+  contents: read
+
 jobs:
   update-readme:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: write  # pushes the regenerated README to the PR branch
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Render helm docs inside the README.md and push changes back to PR branch
-        uses: losisin/helm-docs-github-action@v1
+        uses: losisin/helm-docs-github-action@9e0787c426fdec38be6288bb5c0559dcb388412c # v2
         with:
           chart-search-root: .
           git-push: true
